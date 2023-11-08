@@ -4,6 +4,10 @@ import util
 import numpy as np
 
 
+def matr(matrix):
+    return np.array([[matrix[0]], [matrix[1]]])
+
+
 def broyden(initialX, index, e):
     H = util.hesse(index)
 
@@ -13,7 +17,7 @@ def broyden(initialX, index, e):
     x1scale, x2scale = np.meshgrid(x1scale, x2scale)
     w = util.func([x1scale, x2scale], index)
 
-    # метод релаксационный
+    # метод бройдена
     X = initialX
     fX, dfX = util.derivative(X, index)
     i = 0
@@ -24,7 +28,7 @@ def broyden(initialX, index, e):
 
     n = -np.eye(2)
     K = dfX     # 0-вой шаг
-    t = - dfX.T @ K / (K.T @ H @ K)
+    t = - (dfX.dot(K)) / (K.dot(H).dot(K))
     bX = X
     [fbX, dfbX] = util.derivative(bX, index)
     X = X + t * K
@@ -38,10 +42,12 @@ def broyden(initialX, index, e):
     dg = dfX - dfbX
     dx = X - bX
     z = dx - n @ dg
+    z = matr(z)
+    dg = matr(dg)
     dn = (z @ z.T) / (z.T @ dg)
     n = n + dn
-    K = -n @ dfX
-    t = -(dfX.T @ K) / (K.T @ H @ K)
+    K = -(n.dot(dfX))
+    t = -(dfX.dot(K)) / (K.dot(H).dot(K))
 
     while np.linalg.norm(dfX) > e:
         bX = X
@@ -59,7 +65,7 @@ def broyden(initialX, index, e):
         dn = (z @ z.T) / (z.T @ dg)
         n = n + dn
         K = -n @ dfX
-        t = -(dfX.T @ K) / (K.T @ H @ K)
+        t = -(dfX.dot(K)) / (K.dot(H).dot(K))
 
     util.plot_graph(x1scale, x2scale, w, x1, x2, 'Метод Бройдена')
     util.print_table(iterations, x1, x2, f, "Метод Бройдена:")
